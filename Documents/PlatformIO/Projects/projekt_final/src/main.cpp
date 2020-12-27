@@ -12,8 +12,8 @@
 #include <ESP32Ticker.h>
 
 #define DHTPIN 26
-#define LED1 13
-#define LED2 12
+#define LED1 32
+#define LED2 33
 #define MAX 19
 #define DHTTYPE DHT11
 #define DS18B20 19
