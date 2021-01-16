@@ -17,6 +17,8 @@
 #define LED2 32
 #define DHTTYPE DHT11
 
+#define REPORTING_PERIOD_MS 500
+
 const char *ssid = "ESP32-AP";
 const char *password = "LetMeInPlz";
 
@@ -24,6 +26,7 @@ DHT dht(DHTPIN, DHTTYPE);
 OneWire oneWire(DS18B20);
 DallasTemperature sensors(&oneWire);
 PulseOximeter pox;
+uint32_t tsLastReport = 0;
 
 Ticker timer;
 
@@ -64,40 +67,8 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length)
   }
 }
 
-void onIndexRequest(AsyncWebServerRequest *request)
-{
-  IPAddress remote_ip = request->client()->remoteIP();
-  Serial.println("[" + remote_ip.toString() +
-                 "] HTTP GET request of " + request->url());
-  request->send(SPIFFS, "/index.html", "text/html");
-}
-
-void onCSSRequest(AsyncWebServerRequest *request)
-{
-  IPAddress remote_ip = request->client()->remoteIP();
-  Serial.println("[" + remote_ip.toString() +
-                 "] HTTP GET request of " + request->url());
-  request->send(SPIFFS, "/style.css", "text/css");
-}
-
-/*void onJSRequest(AsyncWebServerRequest *request) {
-  IPAddress remote_ip = request->client()->remoteIP();
-  Serial.println("[" + remote_ip.toString() +
-                  "] HTTP GET request of " + request->url());
-  request->send(SPIFFS, "/index.js", "text/js");
-}*/
-
-void onPageNotFound(AsyncWebServerRequest *request)
-{
-  IPAddress remote_ip = request->client()->remoteIP();
-  Serial.println("[" + remote_ip.toString() +
-                 "] HTTP GET request of " + request->url());
-  request->send(404, "text/plain", "Not found");
-}
-
 void send_sensor()
 {
-  pox.update();
   sensors.requestTemperatures();
   float h = dht.readHumidity();
   float t = dht.readTemperature();
@@ -110,6 +81,8 @@ void send_sensor()
     Serial.println(F("Nepodařilo se číst z DHT senzoru"));
     return;
   }
+  if (millis() - tsLastReport > REPORTING_PERIOD_MS)
+  { 
   String JSON_Data = "{\"temp\":";
   JSON_Data += t;
   JSON_Data += ",\"hum\":";
@@ -123,6 +96,7 @@ void send_sensor()
   JSON_Data += "}";
   Serial.println(JSON_Data);
   websockets.broadcastTXT(JSON_Data);
+  }
 }
 
 void onBeatDetected()
@@ -137,15 +111,7 @@ void setup()
   pinMode(LED2, OUTPUT);
   dht.begin();
 
-  if (!SPIFFS.begin())
-  {
-    Serial.println("Error mounting SPIFFS");
-    while (1)
-      ;
-  }
-
   WiFi.softAP(ssid, password);
-
   Serial.println();
   Serial.println("Access point bezi");
   Serial.print("IP adresa: ");
@@ -153,6 +119,11 @@ void setup()
 
   Serial.print("Inicializace MAX30100..");
 
+  if (!SPIFFS.begin())
+  {
+    Serial.println("An Error has occurred while mounting SPIFFS");
+    return;
+  }
   if (!pox.begin())
   {
     Serial.println("FAILED");
@@ -165,24 +136,28 @@ void setup()
   }
   pox.setIRLedCurrent(MAX30100_LED_CURR_46_8MA);
 
+  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(SPIFFS, "/index.html", String());
+  });
+
+  server.on("/style.css", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(SPIFFS, "/css/style.css", String());
+  });
+
+  server.on("/index.js", HTTP_GET, [](AsyncWebServerRequest *request) {
+    request->send(SPIFFS, "/js/index.js", String());
+  });
+
   pinMode(14, OUTPUT);
 
-  server.on("/", HTTP_GET, onIndexRequest);
-
-  server.on("/style.css", HTTP_GET, onCSSRequest);
-
-  //server.on("/index.js", HTTP_GET, onJSRequest);
-
-  server.onNotFound(onPageNotFound);
-
-  send_sensor();
   server.begin();
   websockets.begin();
   websockets.onEvent(webSocketEvent);
-  timer.attach(0.2, send_sensor);
+  timer.attach(1, send_sensor);
 }
 
 void loop()
 {
+  pox.update();
   websockets.loop();
 }

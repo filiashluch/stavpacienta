@@ -1,10 +1,12 @@
-h3 {
-    color: blue;
-    padding: 2vh;
+h1 {
+    color: red;
+}
+h3{
+    color: darkblue;
 }
 .center {
     text-align: center;
 }
-main{
-    color: blue;
+button{
+    padding: 10px;
 }
