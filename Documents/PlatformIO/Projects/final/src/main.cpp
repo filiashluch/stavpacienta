@@ -17,6 +17,9 @@
 #define LED2 32
 #define DHTTYPE DHT11
 
+const char *ssid = "ESP32-AP";
+const char *password = "LetMeInPlz";
+
 DHT dht(DHTPIN, DHTTYPE);
 OneWire oneWire(DS18B20);
 DallasTemperature sensors(&oneWire);
@@ -61,6 +64,37 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t *payload, size_t length)
   }
 }
 
+void onIndexRequest(AsyncWebServerRequest *request)
+{
+  IPAddress remote_ip = request->client()->remoteIP();
+  Serial.println("[" + remote_ip.toString() +
+                 "] HTTP GET request of " + request->url());
+  request->send(SPIFFS, "/index.html", "text/html");
+}
+
+void onCSSRequest(AsyncWebServerRequest *request)
+{
+  IPAddress remote_ip = request->client()->remoteIP();
+  Serial.println("[" + remote_ip.toString() +
+                 "] HTTP GET request of " + request->url());
+  request->send(SPIFFS, "/style.css", "text/css");
+}
+
+/*void onJSRequest(AsyncWebServerRequest *request) {
+  IPAddress remote_ip = request->client()->remoteIP();
+  Serial.println("[" + remote_ip.toString() +
+                  "] HTTP GET request of " + request->url());
+  request->send(SPIFFS, "/index.js", "text/js");
+}*/
+
+void onPageNotFound(AsyncWebServerRequest *request)
+{
+  IPAddress remote_ip = request->client()->remoteIP();
+  Serial.println("[" + remote_ip.toString() +
+                 "] HTTP GET request of " + request->url());
+  request->send(404, "text/plain", "Not found");
+}
+
 void send_sensor()
 {
   pox.update();
@@ -74,11 +108,6 @@ void send_sensor()
   if (isnan(h) || isnan(t))
   {
     Serial.println(F("Nepodařilo se číst z DHT senzoru"));
-    return;
-  }
-  if (isnan(BPM) || isnan(SpO2))
-  {
-    Serial.println(F("Nepodařilo se číst z MAX30100 senzoru"));
     return;
   }
   String JSON_Data = "{\"temp\":";
@@ -108,57 +137,49 @@ void setup()
   pinMode(LED2, OUTPUT);
   dht.begin();
 
-  WiFi.softAP("kontrola", "");
-  Serial.println("softap");
-  Serial.println("");
-  Serial.println(WiFi.softAPIP());
-
-  if (MDNS.begin("ESP"))
-  { //esp.local/
-    Serial.println("MDNS responder started");
-
-    pinMode(19, OUTPUT);
-
-    if (!SPIFFS.begin())
-    {
-      Serial.println("An Error has occurred while mounting SPIFFS");
-      return;
-    }
-
-    Serial.print("Inicializace MAX30100..");
-
-    if (!pox.begin())
-    {
-      Serial.println("FAILED");
-      for (;;)
-        ;
-    }
-    else
-    {
-      Serial.println("SUCCESS");
-      pox.setOnBeatDetectedCallback(onBeatDetected);
-    }
-    //pox.setIRLedCurrent(MAX30100_LED_CURR_7_6MA);
+  if (!SPIFFS.begin())
+  {
+    Serial.println("Error mounting SPIFFS");
+    while (1)
+      ;
   }
 
-  server.on("/", [](AsyncWebServerRequest *request) {
-    request->send(SPIFFS, "/index.html", String());
-  });
+  WiFi.softAP(ssid, password);
 
-  server.on("/style.css", HTTP_GET, [](AsyncWebServerRequest *request){
-    request->send(SPIFFS, "/css/style.css", "text/css");
-  });
+  Serial.println();
+  Serial.println("Access point bezi");
+  Serial.print("IP adresa: ");
+  Serial.println(WiFi.softAPIP());
 
-  server.on("/on", HTTP_GET, [](AsyncWebServerRequest *request) {
-    digitalWrite(LED1, HIGH);
-    request->send(SPIFFS, "/index.html", String());
-  });
+  Serial.print("Inicializace MAX30100..");
+
+  if (!pox.begin())
+  {
+    Serial.println("FAILED");
+    for (;;)
+      ;
+  }
+  else
+  {
+    Serial.println("SUCCESS");
+  }
+  pox.setIRLedCurrent(MAX30100_LED_CURR_46_8MA);
+
+  pinMode(14, OUTPUT);
+
+  server.on("/", HTTP_GET, onIndexRequest);
+
+  server.on("/style.css", HTTP_GET, onCSSRequest);
+
+  //server.on("/index.js", HTTP_GET, onJSRequest);
+
+  server.onNotFound(onPageNotFound);
 
   send_sensor();
   server.begin();
   websockets.begin();
   websockets.onEvent(webSocketEvent);
-  timer.attach(2, send_sensor);
+  timer.attach(0.2, send_sensor);
 }
 
 void loop()

@@ -1,79 +1,133 @@
-<html>
-<script>
-var connection = new WebSocket('ws://'+location.hostname+':81/');
-var button_1_status = 0;
-var button_2_status = 0;
-var temp_data = 0;
-var hum_data = 0;
-var bpm_data = 0;
-var SpO2_data = 0;
-var bodytemperature_data = 0;
-connection.onmessage = function(event){
-  var full_data = event.data;
-  console.log(full_data);
-  var data = JSON.parse(full_data);
-  temp_data = data.temp;
-  hum_data = data.hum;
-  var bpm_data = data.bpm;
-  var SpO2_data = data.SpO2;
-  var bodytemperature_data = data.bodytemperature;
-  document.getElementById("temp_meter").value = temp_data;
-  document.getElementById("temp_value").innerHTML = temp_data;
-  document.getElementById("hum_meter").value = hum_data;
-  document.getElementById("hum_value").innerHTML = hum_data;
-  document.getElementById("bpm_meter").value = bpm_data;
-  document.getElementById("bpm_value").innerHTML = bpm_data;
-  document.getElementById("SpO2_meter").value = SpO2_data;
-  document.getElementById("SpO2_value").innerHTML = SpO2_data;
-  document.getElementById("bodytemperature_meter").value = bodytemperature_data;
-  document.getElementById("bodytemperature_value").innerHTML = bodytemperature_data;
-}
-function button_1_on()
-{
-   button_1_status = 1; 
-  console.log("LED 1 is ON");
-  send_data();
-}
-function button_1_off()
-{
-  button_1_status = 0;
-console.log("LED 1 is OFF");
-send_data();
-}
-function button_2_on()
-{
-   button_2_status = 1; 
-  console.log("LED 2 is ON");
-  send_data();
-}
-function button_2_off()
-{
-  button_2_status = 0;
-console.log("LED 2 is OFF");
-send_data();
-}
-function send_data()
-{
-  var full_data = '{"LED1" :'+button_1_status+',"LED2":'+button_2_status+'}';
-  connection.send(full_data);
-}
-</script>
+<!DOCTYPE html>
+<html lang="cs">
+
 <head>
-  <link rel="stylesheet" type="text/css" href="style.css">
+  <script language="javascript" type="text/javascript">
+    var password;
+    var pass1 = "admin1";
+
+    password = prompt('Zadejte heslo', ' ');
+
+    if (password == pass1)
+      alert('Spravne heslo!');
+    else {
+      window.location = "esp.local/";
+    }
+    var connection = new WebSocket('ws://' + location.hostname + ':81/');
+    var button_1_status = 0;
+    var button_2_status = 0;
+    var temp_data = 0;
+    var hum_data = 0;
+    var bpm_data = 0;
+    var SpO2_data = 0;
+    var bodytemperature_data = 0;
+    connection.onmessage = function (event) {
+      var full_data = event.data;
+      console.log(full_data);
+      var data = JSON.parse(full_data);
+      temp_data = data.temp;
+      hum_data = data.hum;
+      var bpm_data = data.bpm;
+      var SpO2_data = data.SpO2;
+      var bodytemperature_data = data.bodytemperature;
+      document.getElementById("temp_meter").value = temp_data;
+      document.getElementById("temp_value").innerHTML = temp_data;
+      document.getElementById("hum_meter").value = hum_data;
+      document.getElementById("hum_value").innerHTML = hum_data;
+      document.getElementById("bpm_meter").value = bpm_data;
+      document.getElementById("bpm_value").innerHTML = bpm_data;
+      document.getElementById("SpO2_meter").value = SpO2_data;
+      document.getElementById("SpO2_value").innerHTML = SpO2_data;
+      document.getElementById("bodytemperature_meter").value = bodytemperature_data;
+      document.getElementById("bodytemperature_value").innerHTML = bodytemperature_data;
+    }
+    function button_1_on() {
+      button_1_status = 1;
+      console.log("LED 1 is ON");
+      send_data();
+    }
+    function button_1_off() {
+      button_1_status = 0;
+      console.log("LED 1 is OFF");
+      send_data();
+    }
+    function button_2_on() {
+      button_2_status = 1;
+      console.log("LED 2 is ON");
+      send_data();
+    }
+    function button_2_off() {
+      button_2_status = 0;
+      console.log("LED 2 is OFF");
+      send_data();
+    }
+    function send_data() {
+      var full_data = '{"LED1" :' + button_1_status + ',"LED2":' + button_2_status + '}';
+      connection.send(full_data);
+    }
+  </script>
+  <title>System pro monitorovani­ zdravotni­ho stavu pacienta</title>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+    integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  <link rel="stylesheet" href="css/style.css">
 </head>
+
 <body>
-<center>
-<h1>System pro monitorovani­ zdravotni­ho stavu pacienta</h1>
-<h3> LED 1 </h3>
-<button onclick= "button_1_on()" >On</button><button onclick="button_1_off()" >Off</button>
-<h3> LED 2 </h3>
-<button onclick="button_2_on()">On</button><button onclick="button_2_off()">Off</button>
-</center>
-<div style="text-align: center;">
-<h3>Teplota</h3><meter value="2" min="0" max="100" id="temp_meter"> </meter><h3 id="temp_value" style="display: inline-block;"> 2 </h3>
-<h3>Vlhkost</h3><meter value="2" min="0" max="100" id="hum_meter"> </meter><h3 id="hum_value" style="display: inline-block;"> 2 </h3>
-<h3>Tep</h3><meter value="2" min="0" max="100" id="bpm_meter"> </meter><h3 id="bpm_value" style="display: inline-block;"> 2 </h3>
-<h3>Kyslik</h3><meter value="2" min="0" max="100" id="SpO2_meter"> </meter><h3 id="SpO2_value" style="display: inline-block;"> 2 </h3>
-<h3>Teplota tela</h3><meter value="2" min="0" max="100" id="bodytemperature_meter"> </meter><h3 id="bodytemperature_value" style="display: inline-block;"> 2 </h3>
+  <header class="jumbotron jumbotron-fluid change" style="text-align:center; color:red;">
+    <div class="center">
+      <h1 class="text-black display-2" id="sys">System pro monitorovani­ zdravotni­ho stavu pacienta</h1>
+    </div>
+  </header>
+  <main class="container" style="text-align:center; color:blue;">
+    <div class="row" style="margin: 10px 10px;">
+      <div class="col-12">
+        <h3> LED 1 </h3>
+        <button onclick="button_1_on()">On</button><button onclick="button_1_off()">Off</button>
+        <h3> LED 2 </h3>
+        <button onclick="button_2_on()">On</button><button onclick="button_2_off()">Off</button>
+        <h3>Teplota</h3><meter value="2" min="0" max="100" id="temp_meter"> </meter>
+        <h3 id="temp_value" style="display: inline-block;"> 2 </h3>
+        <h3>Vlhkost</h3><meter value="2" min="0" max="100" id="hum_meter"> </meter>
+        <h3 id="hum_value" style="display: inline-block;"> 2 </h3>
+        <h3>Tep</h3><meter value="2" min="0" max="100" id="bpm_meter"> </meter>
+        <h3 id="bpm_value" style="display: inline-block;"> 2 </h3>
+        <h3>Kyslik</h3><meter value="2" min="0" max="100" id="SpO2_meter"> </meter>
+        <h3 id="SpO2_value" style="display: inline-block;"> 2 </h3>
+        <h3>Teplota tela</h3><meter value="2" min="0" max="100" id="bodytemperature_meter"> </meter>
+        <h3 id="bodytemperature_value" style="display: inline-block;"> 2 </h3>
+        <br />
+      </div>
+    </div>
+  </main>
+  <footer>
+    <div class="container" style="text-align:center;">
+      <h3 class="text-uppercase mb-4 pb-3">Kontakt</h3>
+      <div class="text-secondary">
+        <p>&copy; Filip Hluchník 2020</p>
+        <p>E-mail: filiphluchnik@seznam.cz</p>
+        <p>Github: <a href="https://github.com/filiashluch" target="_blank">https://github.com/filiashluch</a></p>
+      </div>
+    </div>
+    </div>
+  </footer>
+  <script>var connection = new WebSocket('ws://' + location.hostname + ':81/');</script>
+  <!-- Optional JavaScript -->
+  <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+    integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+    crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+    integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+    crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+    integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+    crossorigin="anonymous"></script>
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <script src="js/index.js"></script>
 </body>
+
 </html>

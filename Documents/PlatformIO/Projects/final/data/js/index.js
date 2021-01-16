@@ -1,3 +1,14 @@
+var password;
+var pass1="admin1";
+
+password=prompt('Zadejte heslo',' ');
+
+if (password==pass1)
+  alert('Spravne heslo!');
+else
+   {
+    window.location="esp.local/";
+    }
 var connection = new WebSocket('ws://'+location.hostname+':81/');
 var button_1_status = 0;
 var button_2_status = 0;
