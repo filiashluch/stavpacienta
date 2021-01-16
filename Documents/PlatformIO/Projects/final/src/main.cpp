@@ -82,20 +82,20 @@ void send_sensor()
     return;
   }
   if (millis() - tsLastReport > REPORTING_PERIOD_MS)
-  { 
-  String JSON_Data = "{\"temp\":";
-  JSON_Data += t;
-  JSON_Data += ",\"hum\":";
-  JSON_Data += h;
-  JSON_Data += ",\"tep\":";
-  JSON_Data += BPM;
-  JSON_Data += ",\"ox\":";
-  JSON_Data += SpO2;
-  JSON_Data += ",\"bodytemp\":";
-  JSON_Data += bodytemperature;
-  JSON_Data += "}";
-  Serial.println(JSON_Data);
-  websockets.broadcastTXT(JSON_Data);
+  {
+    String JSON_Data = "{\"temp\":";
+    JSON_Data += t;
+    JSON_Data += ",\"hum\":";
+    JSON_Data += h;
+    JSON_Data += ",\"tep\":";
+    JSON_Data += BPM;
+    JSON_Data += ",\"ox\":";
+    JSON_Data += SpO2;
+    JSON_Data += ",\"bodytemp\":";
+    JSON_Data += bodytemperature;
+    JSON_Data += "}";
+    Serial.println(JSON_Data);
+    websockets.broadcastTXT(JSON_Data);
   }
 }
 
