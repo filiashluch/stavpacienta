@@ -1,5 +1,5 @@
 # Přístroj na měrení stavu pacienta
-Cílem mého projektu je vytvořit přístroj k měření teploty a vlhkosti v místnosti plus teplotu, tep a úroveň kyslíku v krvi pacienta. Přístroj bude informace posílat skrze MQTT na server a přehledně zobrazovat.
+Cílem mého projektu je vytvořit přístroj k měření teploty a vlhkosti v místnosti plus teplotu, tep a úroveň kyslíku v krvi pacienta. Přístroj bude informace posílat na server a přehledně zobrazovat.
 
 Součástky:
 1. ESP32 ✔
