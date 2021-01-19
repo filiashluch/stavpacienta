@@ -17,8 +17,6 @@
 #define LED2 32
 #define DHTTYPE DHT11
 
-#define REPORTING_PERIOD_MS 500
-
 const char *ssid = "ESP32-AP";
 const char *password = "LetMeInPlz";
 
@@ -81,22 +79,19 @@ void send_sensor()
     Serial.println(F("Nepodařilo se číst z DHT senzoru"));
     return;
   }
-  if (millis() - tsLastReport > REPORTING_PERIOD_MS)
-  {
-    String JSON_Data = "{\"temp\":";
-    JSON_Data += t;
-    JSON_Data += ",\"hum\":";
-    JSON_Data += h;
-    JSON_Data += ",\"tep\":";
-    JSON_Data += BPM;
-    JSON_Data += ",\"ox\":";
-    JSON_Data += SpO2;
-    JSON_Data += ",\"bodytemp\":";
-    JSON_Data += bodytemperature;
-    JSON_Data += "}";
-    Serial.println(JSON_Data);
-    websockets.broadcastTXT(JSON_Data);
-  }
+  String JSON_Data = "{\"temp\":";
+  JSON_Data += t;
+  JSON_Data += ",\"hum\":";
+  JSON_Data += h;
+  JSON_Data += ",\"tep\":";
+  JSON_Data += BPM;
+  JSON_Data += ",\"ox\":";
+  JSON_Data += SpO2;
+  JSON_Data += ",\"bodytemp\":";
+  JSON_Data += bodytemperature;
+  JSON_Data += "}";
+  Serial.println(JSON_Data);
+  websockets.broadcastTXT(JSON_Data);
 }
 
 void onBeatDetected()
@@ -134,7 +129,7 @@ void setup()
   {
     Serial.println("SUCCESS");
   }
-  pox.setIRLedCurrent(MAX30100_LED_CURR_46_8MA);
+  //pox.setIRLedCurrent(MAX30100_LED_CURR_46_8MA);
 
   server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
     request->send(SPIFFS, "/index.html", String());
@@ -147,8 +142,6 @@ void setup()
   server.on("/index.js", HTTP_GET, [](AsyncWebServerRequest *request) {
     request->send(SPIFFS, "/js/index.js", String());
   });
-
-  pinMode(14, OUTPUT);
 
   server.begin();
   websockets.begin();

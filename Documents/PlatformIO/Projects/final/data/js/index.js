@@ -38,22 +38,18 @@ connection.onmessage = function (event) {
 }
 function button_1_on() {
   button_1_status = 1;
-  console.log("LED 1 is ON");
   send_data();
 }
 function button_1_off() {
   button_1_status = 0;
-  console.log("LED 1 is OFF");
   send_data();
 }
 function button_2_on() {
   button_2_status = 1;
-  console.log("LED 2 is ON");
   send_data();
 }
 function button_2_off() {
   button_2_status = 0;
-  console.log("LED 2 is OFF");
   send_data();
 }
 function send_data() {
